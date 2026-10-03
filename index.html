@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Speed Test Pro V2</title>
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    min-height:100vh;
+    font-family:Arial,Helvetica,sans-serif;
+    background:
+        radial-gradient(circle at top,#12345a,#07111f 45%,#030812);
+    color:white;
+    padding:18px;
+}
+
+.container{
+    width:100%;
+    max-width:720px;
+    margin:auto;
+    background:rgba(10,25,42,.96);
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:28px;
+    padding:22px;
+    box-shadow:0 20px 60px rgba(0,0,0,.45);
+}
+
+.header{
+    text-align:center;
+}
+
+.header h1{
+    margin:0;
+    font-size:30px;
+}
+
+.header p{
+    color:#8fa8c2;
+    margin:7px 0;
+}
+
+/* SPEEDOMETER */
+
+.meter{
+    width:290px;
+    height:290px;
+    margin:20px auto 10px;
+    position:relative;
+}
+
+.meter svg{
+    width:100%;
+    height:100%;
+    transform:rotate(-135deg);
+}
+
+.track{
+    fill:none;
+    stroke:#19334f;
+    stroke-width:15;
+}
+
+.progress{
+    fill:none;
+    stroke:#1683ff;
+    stroke-width:15;
+    stroke-linecap:round;
+    stroke-dasharray:565;
+    stroke-dashoffset:565;
+    transition:stroke-dashoffset .12s linear;
+}
+
+.meter-center{
+    position:absolute;
+    inset:0;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+}
+
+.speed{
+    font-size:52px;
+    font-weight:bold;
+}
+
+.mbps{
+    color:#8fa8c2;
+}
+
+.phase{
+    margin-top:8px;
+    color:#1683ff;
+    font-weight:bold;
+    font-size:13px;
+}
+
+button{
+    width:100%;
+    border:0;
+    border-radius:15px;
+    padding:16px;
+    background:#1683ff;
+    color:white;
+    font-size:17px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+button:disabled{
+    opacity:.5;
+}
+
+/* RESULT */
+
+.results{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+    margin-top:15px;
+}
+
+.card{
+    background:#071522;
+    border:1px solid #1b344e;
+    border-radius:16px;
+    padding:15px 5px;
+    text-align:center;
+}
+
+.icon{
+    font-size:21px;
+}
+
+.label{
+    color:#829bb5;
+    font-size:12px;
+    margin-top:5px;
+}
+
+.value{
+    font-size:20px;
+    font-weight:bold;
+    margin-top:6px;
+}
+
+/* BEST */
+
+.best{
+    margin-top:15px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+}
+
+.best-card{
+    background:#071522;
+    border:1px solid #1b344e;
+    border-radius:15px;
+    padding:15px;
+}
+
+.best-title{
+    color:#829bb5;
+    font-size:12px;
+}
+
+.best-value{
+    margin-top:7px;
+    font-size:21px;
+    font-weight:bold;
+}
+
+/* GRAPH */
+
+.graph-title{
+    margin:20px 0 8px;
+    color:#8fa8c2;
+    font-size:13px;
+}
+
+canvas{
+    width:100%;
+    height:180px;
+    background:#071522;
+    border:1px solid #1b344e;
+    border-radius:16px;
+}
+
+/* INFO */
+
+.info{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-top:12px;
+}
+
+.info-card{
+    background:#071522;
+    border:1px solid #1b344e;
+    border-radius:13px;
+    padding:12px;
+}
+
+.info-title{
+    color:#7892ad;
+    font-size:11px;
+}
+
+.info-value{
+    margin-top:5px;
+    font-size:14px;
+    word-break:break-word;
+}
+
+/* HISTORY */
+
+.history-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:24px;
+    margin-bottom:10px;
+}
+
+.history-header h2{
+    font-size:18px;
+    margin:0;
+}
+
+.clear{
+    width:auto;
+    padding:8px 12px;
+    font-size:12px;
+    background:#d93636;
+}
+
+.history{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+
+.history-item{
+    background:#071522;
+    border:1px solid #1b344e;
+    border-radius:13px;
+    padding:12px;
+}
+
+.history-top{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+}
+
+.history-date{
+    color:#7892ad;
+    font-size:11px;
+}
+
+.history-speed{
+    font-weight:bold;
+    color:#1683ff;
+}
+
+.history-data{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    margin-top:9px;
+    text-align:center;
+}
+
+.history-data div{
+    font-size:12px;
+    color:#b4c5d7;
+}
+
+.empty{
+    text-align:center;
+    color:#657f99;
+    padding:20px;
+    background:#071522;
+    border-radius:13px;
+}
+
+.footer{
+    text-align:center;
+    margin-top:18px;
+    color:#617991;
+    font-size:11px;
+}
+
+@media(max-width:500px){
+
+    .container{
+        padding:16px;
+    }
+
+    .meter{
+        width:250px;
+        height:250px;
+    }
+
+    .speed{
+        font-size:44px;
+    }
+
+    .results{
+        gap:6px;
+    }
+
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="header">
+<h1>⚡ Speed Test Pro V2</h1>
+<p>Internet Speed Test</p>
+</div>
+
+
+<!-- SPEEDOMETER -->
+
+<div class="meter">
+
+<svg viewBox="0 0 200 200">
+
+<circle
+class="track"
+cx="100"
+cy="100"
+r="90"
+/>
+
+<circle
+id="progress"
+class="progress"
+cx="100"
+cy="100"
+r="90"
+/>
+
+</svg>
+
+<div class="meter-center">
+
+<div id="speed" class="speed">
+0.00
+</div>
+
+<div class="mbps">
+Mbps
+</div>
+
+<div id="phase" class="phase">
+SIAP
+</div>
+
+</div>
+
+</div>
+
+
+<button id="start" onclick="startTest()">
+MULAI TES
+</button>
+
+
+<!-- RESULT -->
+
+<div class="results">
+
+<div class="card">
+<div class="icon">📡</div>
+<div class="label">PING</div>
+<div id="ping" class="value">-- ms</div>
+</div>
+
+<div class="card">
+<div class="icon">📥</div>
+<div class="label">DOWNLOAD</div>
+<div id="download" class="value">-- Mbps</div>
+</div>
+
+<div class="card">
+<div class="icon">📤</div>
+<div class="label">UPLOAD</div>
+<div id="upload" class="value">-- Mbps</div>
+</div>
+
+</div>
+
+
+<!-- BEST -->
+
+<div class="best">
+
+<div class="best-card">
+
+<div class="best-title">
+🏆 DOWNLOAD TERBAIK
+</div>
+
+<div id="bestDownload" class="best-value">
+-- Mbps
+</div>
+
+</div>
+
+
+<div class="best-card">
+
+<div class="best-title">
+🕘 TES TERAKHIR
+</div>
+
+<div id="lastResult" class="best-value">
+Belum ada
+</div>
+
+</div>
+
+</div>
+
+
+<!-- GRAPH -->
+
+<div class="graph-title">
+Grafik kecepatan real-time
+</div>
+
+<canvas id="graph"></canvas>
+
+
+<!-- INFO -->
+
+<div class="info">
+
+<div class="info-card">
+<div class="info-title">IP PUBLIK</div>
+<div id="ip" class="info-value">
+Mencari...
+</div>
+</div>
+
+<div class="info-card">
+<div class="info-title">STATUS</div>
+<div id="status" class="info-value">
+Siap
+</div>
+</div>
+
+<div class="info-card">
+<div class="info-title">JARINGAN</div>
+<div id="network" class="info-value">
+Mendeteksi...
+</div>
+</div>
+
+<div class="info-card">
+<div class="info-title">WAKTU</div>
+<div id="time" class="info-value">
+--
+</div>
+</div>
+
+</div>
+
+
+<!-- HISTORY -->
+
+<div class="history-header">
+
+<h2>📜 Riwayat Tes</h2>
+
+<button
+class="clear"
+onclick="clearHistory()"
+>
+Hapus Riwayat
+</button>
+
+</div>
+
+<div id="history" class="history">
+</div>
+
+
+<div class="footer">
+Speed Test Pro V2
+</div>
+
+</div>
+
+
+<script>
+
+/* =========================
+ELEMENT
+========================= */
+
+const speedEl =
+document.getElementById("speed");
+
+const pingEl =
+document.getElementById("ping");
+
+const downloadEl =
+document.getElementById("download");
+
+const uploadEl =
+document.getElementById("upload");
+
+const phaseEl =
+document.getElementById("phase");
+
+const statusEl =
+document.getElementById("status");
+
+const networkEl =
+document.getElementById("network");
+
+const timeEl =
+document.getElementById("time");
+
+const ipEl =
+document.getElementById("ip");
+
+const button =
+document.getElementById("start");
+
+const progress =
+document.getElementById("progress");
+
+const canvas =
+document.getElementById("graph");
+
+const ctx =
+canvas.getContext("2d");
+
+const bestDownloadEl =
+document.getElementById("bestDownload");
+
+const lastResultEl =
+document.getElementById("lastResult");
+
+const historyEl =
+document.getElementById("history");
+
+
+/* =========================
+GRAPH
+========================= */
+
+let points=[];
+
+
+function resizeCanvas(){
+
+const dpr =
+window.devicePixelRatio || 1;
+
+canvas.width =
+canvas.clientWidth*dpr;
+
+canvas.height =
+canvas.clientHeight*dpr;
+
+ctx.setTransform(
+dpr,0,0,dpr,0,0
+);
+
+drawGraph();
+
+}
+
+
+function drawGraph(){
+
+const w =
+canvas.clientWidth;
+
+const h =
+canvas.clientHeight;
+
+ctx.clearRect(0,0,w,h);
+
+ctx.strokeStyle =
+"#17304a";
+
+ctx.lineWidth=1;
+
+
+for(
+let y=20;
+y<h;
+y+=35
+){
+
+ctx.beginPath();
+
+ctx.moveTo(0,y);
+ctx.lineTo(w,y);
+
+ctx.stroke();
+
+}
+
+
+if(points.length<2)
+return;
+
+
+const max =
+Math.max(...points,10);
+
+
+ctx.strokeStyle =
+"#1683ff";
+
+ctx.lineWidth=3;
+
+ctx.beginPath();
+
+
+points.forEach(
+(value,index)=>{
+
+const x =
+index/
+(points.length-1)*
+w;
+
+const y =
+h-
+(value/max*h);
+
+
+if(index===0)
+ctx.moveTo(x,y);
+else
+ctx.lineTo(x,y);
+
+});
+
+
+ctx.stroke();
+
+}
+
+
+/* =========================
+ANIMATED METER
+========================= */
+
+let displayedSpeed=0;
+let targetSpeed=0;
+
+
+function animateSpeed(){
+
+displayedSpeed +=
+(targetSpeed-displayedSpeed)*0.12;
+
+
+if(
+Math.abs(
+targetSpeed-displayedSpeed
+)<0.01
+){
+
+displayedSpeed=
+targetSpeed;
+
+}
+
+
+setMeterVisual(
+displayedSpeed
+);
+
+
+requestAnimationFrame(
+animateSpeed
+);
+
+}
+
+
+function setMeterVisual(value){
+
+const max=500;
+
+const percent =
+Math.min(
+Math.max(value/max,0),
+1
+);
+
+const circumference=565;
+
+
+progress.style.strokeDashoffset =
+circumference -
+circumference*percent;
+
+
+speedEl.textContent =
+value.toFixed(2);
+
+}
+
+
+animateSpeed();
+
+
+function setTargetSpeed(value){
+
+targetSpeed=value;
+
+}
+
+
+/* =========================
+NETWORK
+========================= */
+
+function detectNetwork(){
+
+if(!navigator.connection){
+
+networkEl.textContent =
+"Browser tidak mendukung";
+
+return;
+
+}
+
+const c =
+navigator.connection;
+
+let type =
+c.effectiveType ||
+"Unknown";
+
+if(c.type){
+
+type =
+c.type+
+" / "+
+type;
+
+}
+
+networkEl.textContent =
+type.toUpperCase();
+
+}
+
+
+detectNetwork();
+
+
+if(navigator.connection){
+
+navigator.connection.addEventListener(
+"change",
+detectNetwork
+);
+
+}
+
+
+/* =========================
+IP
+========================= */
+
+async function getIP(){
+
+try{
+
+const response =
+await fetch(
+"https://api64.ipify.org?format=json",
+{
+cache:"no-store"
+}
+);
+
+const data =
+await response.json();
+
+ipEl.textContent =
+data.ip;
+
+}catch(e){
+
+ipEl.textContent =
+"Tidak tersedia";
+
+}
+
+}
+
+
+getIP();
+
+
+/* =========================
+PING
+========================= */
+
+async function testPing(){
+    const results = [];
+    const warmup = 2;
+    const jumlahTes = 10;
+    const timeoutMs = 3000;
+
+    async function ukurPing(){
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
+        const start = performance.now();
+
+        try{
+            const response = await fetch(
+                "https://speed.cloudflare.com/__down?bytes=1&x=" +
+                Date.now() + Math.random(),
+                {
+                    method: "GET",
+                    cache: "no-store",
+                    signal: controller.signal
+                }
+            );
+
+            if(!response.ok){
+                throw new Error("HTTP " + response.status);
+            }
+
+            await response.arrayBuffer();
+
+            return performance.now() - start;
+
+        }finally{
+            clearTimeout(timer);
+        }
+    }
+
+    /* PEMANASAN */
+    for(let i = 0; i < warmup; i++){
+        try{
+            await ukurPing();
+        }catch(error){
+            console.log("Warmup ping:", error);
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+
+    /* PENGUKURAN */
+    for(let i = 0; i < jumlahTes; i++){
+        try{
+            const ping = await ukurPing();
+
+            if(ping > 0 && ping < timeoutMs){
+                results.push(ping);
+            }
+
+        }catch(error){
+            console.log("Ping gagal:", error);
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+
+    if(results.length === 0){
+        throw new Error("Tidak dapat mengukur ping");
+    }
+
+    results.sort((a,b) => a-b);
+
+    const tengah = Math.floor(results.length / 2);
+
+    const median =
+        results.length % 2 === 0
+        ? (results[tengah - 1] + results[tengah]) / 2
+        : results[tengah];
+
+    return median;
+}
+
+/* =========================
+DOWNLOAD
+========================= */
+
+async function testDownload(){
+
+    const chunkSize = 3 * 1024 * 1024;
+    const totalChunks = 8;
+
+    let totalBytes = 0;
+
+    const startTime = performance.now();
+
+    for(let i = 0; i < totalChunks; i++){
+
+        const chunkStart = performance.now();
+
+        const url =
+            "https://speed.cloudflare.com/__down?bytes=" +
+            chunkSize +
+            "&cache=" +
+            Date.now() +
+            Math.random();
+
+        const response = await fetch(url, {
+            method: "GET",
+            cache: "no-store"
+        });
+
+        if(!response.ok){
+            throw new Error(
+                "Server download error: HTTP " +
+                response.status
+            );
+        }
+
+        const buffer = await response.arrayBuffer();
+
+        const chunkTime =
+            (performance.now() - chunkStart) / 1000;
+
+        totalBytes += buffer.byteLength;
+
+        if(chunkTime > 0 && buffer.byteLength > 0){
+
+            const chunkSpeed =
+                (buffer.byteLength * 8 / 1000000) /
+                chunkTime;
+
+            /*
+              Smoothing grafik supaya tidak
+              terlalu melonjak.
+            */
+            let displaySpeed = chunkSpeed;
+
+            if(points.length > 0){
+                const previous =
+                    points[points.length - 1];
+
+                displaySpeed =
+                    (previous * 0.65) +
+                    (chunkSpeed * 0.35);
+            }
+
+            setTargetSpeed(displaySpeed);
+
+            points.push(displaySpeed);
+
+            if(points.length > 60){
+                points.shift();
+            }
+
+            drawGraph();
+        }
+    }
+
+    const duration =
+        (performance.now() - startTime) / 1000;
+
+    if(duration <= 0 || totalBytes <= 0){
+        throw new Error("Waktu tes tidak valid");
+    }
+
+    /*
+      Hasil akhir menggunakan seluruh data,
+      bukan nilai grafik yang sudah dihaluskan.
+    */
+    const result =
+        (totalBytes * 8 / 1000000) /
+        duration;
+
+    setTargetSpeed(result);
+
+    return result;
+}
+
+/* =========================
+UPLOAD
+========================= */
+
+async function testUpload(){
+
+    const size = 512 * 1024;
+
+    const data = new Uint8Array(size);
+
+    const startTime = performance.now();
+
+    const controller = new AbortController();
+
+    const timeout = setTimeout(() => {
+        controller.abort();
+    }, 8000);
+
+    try {
+
+        await fetch(
+            "https://speed.cloudflare.com/__up?x=" +
+            Date.now(),
+            {
+                method: "POST",
+                body: data,
+                cache: "no-store",
+                signal: controller.signal
+            }
+        );
+
+        const duration =
+            (performance.now() - startTime) / 1000;
+
+        clearTimeout(timeout);
+
+        if(duration <= 0){
+            throw new Error("Waktu upload tidak valid");
+        }
+
+        const result =
+            (size * 8 / 1000000) / duration;
+
+        setTargetSpeed(result);
+
+        return result;
+
+    } catch(error) {
+
+        clearTimeout(timeout);
+
+        console.log("Upload:", error);
+
+        /*
+          Jangan membuat tes berhenti.
+          Tampilkan upload sebagai tidak tersedia.
+        */
+
+        return 0;
+    }
+}
+/* =========================
+HISTORY
+========================= */
+
+function getHistory(){
+
+try{
+
+return JSON.parse(
+localStorage.getItem(
+"speedtest_history"
+)
+)||[];
+
+}catch(e){
+
+return [];
+
+}
+
+}
+
+
+function saveHistory(data){
+
+const history =
+getHistory();
+
+
+history.unshift(data);
+
+
+/* Simpan maksimal 20 tes */
+
+if(history.length>20){
+
+history.length=20;
+
+}
+
+
+localStorage.setItem(
+"speedtest_history",
+JSON.stringify(history)
+);
+
+
+renderHistory();
+
+}
+
+
+function renderHistory(){
+
+const history =
+getHistory();
+
+
+historyEl.innerHTML="";
+
+
+if(history.length===0){
+
+historyEl.innerHTML =
+`
+<div class="empty">
+Belum ada riwayat tes
+</div>
+`;
+
+return;
+
+}
+
+
+history.forEach(
+(item,index)=>{
+
+const div =
+document.createElement("div");
+
+div.className =
+"history-item";
+
+
+div.innerHTML =
+`
+<div class="history-top">
+
+<div class="history-date">
+${item.date}
+</div>
+
+<div class="history-speed">
+${item.download.toFixed(2)} Mbps
+</div>
+
+</div>
+
+<div class="history-data">
+
+<div>
+📥 ${item.download.toFixed(2)} Mbps
+</div>
+
+<div>
+📤 ${item.upload.toFixed(2)} Mbps
+</div>
+
+<div>
+📡 ${item.ping.toFixed(0)} ms
+</div>
+
+</div>
+`;
+
+
+historyEl.appendChild(div);
+
+});
+
+}
+
+
+function updateBest(){
+
+const history =
+getHistory();
+
+
+if(history.length===0){
+
+bestDownloadEl.textContent =
+"-- Mbps";
+
+lastResultEl.textContent =
+"Belum ada";
+
+return;
+
+}
+
+
+const best =
+Math.max(
+...history.map(
+x=>x.download
+)
+);
+
+
+bestDownloadEl.textContent =
+best.toFixed(2)+
+" Mbps";
+
+
+lastResultEl.textContent =
+history[0].download.toFixed(2)+
+" Mbps";
+
+}
+
+
+function clearHistory(){
+
+if(!confirm(
+"Yakin ingin menghapus semua riwayat?"
+)){
+
+return;
+
+}
+
+
+localStorage.removeItem(
+"speedtest_history"
+);
+
+
+renderHistory();
+
+updateBest();
+
+}
+
+
+renderHistory();
+updateBest();
+
+
+/* =========================
+START TEST
+========================= */
+
+async function startTest(){
+
+button.disabled=true;
+
+points=[];
+
+drawGraph();
+
+setTargetSpeed(0);
+
+
+pingEl.textContent =
+"-- ms";
+
+downloadEl.textContent =
+"-- Mbps";
+
+uploadEl.textContent =
+"-- Mbps";
+
+
+statusEl.textContent =
+"Memulai tes...";
+
+
+try{
+
+/* PING */
+
+phaseEl.textContent =
+"PING";
+
+statusEl.textContent =
+"Mengukur ping...";
+
+
+const ping =
+await testPing();
+
+
+pingEl.textContent =
+ping.toFixed(0)+
+" ms";
+
+
+/* DOWNLOAD */
+
+phaseEl.textContent =
+"DOWNLOAD";
+
+statusEl.textContent =
+"Mengukur download...";
+
+
+const download =
+await testDownload();
+
+
+downloadEl.textContent =
+download.toFixed(2)+
+" Mbps";
+
+
+setTargetSpeed(
+download
+);
+
+
+/* UPLOAD */
+
+phaseEl.textContent =
+"UPLOAD";
+
+statusEl.textContent =
+"Mengukur upload...";
+
+
+
+
+const upload =
+await testUpload();
+
+if(upload > 0){
+
+    uploadEl.textContent =
+        upload.toFixed(2) +
+        " Mbps";
+
+}else{
+
+    uploadEl.textContent =
+        "N/A";
+
+}
+
+/* SIMPAN */
+
+const now =
+new Date();
+
+
+const date =
+now.toLocaleString(
+"id-ID"
+);
+
+
+timeEl.textContent =
+now.toLocaleTimeString(
+"id-ID"
+);
+
+
+saveHistory({
+
+date:date,
+
+download:download,
+
+upload:upload,
+
+ping:ping
+
+});
+
+
+updateBest();
+
+
+phaseEl.textContent =
+"SELESAI";
+
+statusEl.textContent =
+"Tes berhasil";
+
+
+}catch(error){
+
+console.error(error);
+
+phaseEl.textContent =
+"ERROR";
+
+statusEl.textContent =
+"Tes gagal. Periksa koneksi internet.";
+
+}
+
+
+button.disabled=false;
+
+}
+
+
+/* =========================
+INIT
+========================= */
+
+window.addEventListener(
+"resize",
+resizeCanvas
+);
+
+resizeCanvas();
+
+</script>
+
+</body>
+</html>
